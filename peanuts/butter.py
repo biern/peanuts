@@ -39,6 +39,7 @@ def options_copier(options):
 
 
 from django.template import RequestContext
+from django.shortcuts import render_to_response
 
 def shorter_view(view):
     #TODO: Create a view generator that may use custom context_instance, 
