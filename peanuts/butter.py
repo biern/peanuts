@@ -10,20 +10,32 @@ This module contains a mix of a variety of useful shortcut functions intended
 
 from copy import copy
 
-def copy_generic_options(std_options, *remove, **extra):
-    """ 
-    Copies 'std_options' dict and alters it according to other args.
-    Saves time in writing similar sets of options for generic views.
-    All named args will update std_options dict.
-    All positional ones indicate fields to remove.
+def options_copier(options):
+    """ Creates a 'copier' function using 'options' dictionary.
+    That function stores 'options' and uses it as a matrix for creating
+    new, usually altered dictionaries. Options to change are passed as 
+    keywords for copier. This function is particularly useful in creating
+    sets of options for generic views which often have to differ a bit from
+     each other.
+
+    Example:
+        blog_options = options_copier(some_options)
+        archive_index_options = blog_options( 
+            num_latest=5
+        )
+        archive_year_options = blog_options( 
+            make_object_list=True
+        )
+        and etc..
     """
-    if not remove: remove = []
-    res = copy(std_options)
-    res.update(extra)
-    for item in remove:
-        del res[item]
-        
-    return res
+    def copier(*args, **kwargs):
+        new_options = copy(options)
+        for item in args:
+            del res[item]
+        new_options.update(kwargs)
+        return new_options
+    
+    return copier
 
 
 from django.template import RequestContext
