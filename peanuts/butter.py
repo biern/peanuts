@@ -77,3 +77,42 @@ def shorter_view(view):
         return render_to_response(**nkwargs)
         
     return new_view
+
+
+import django.conf
+
+def extend_django_settings(settings, all_names=None, overwrite=False):
+    """
+    Extends django settings by given dict, module or any object containing
+    __dict__ method. If 'settings' is a dict, then all variable names are
+    accepted, else __dict__ method is used and only uppercase names not starting
+    with "_" are accepted. This is default behaviour that can be adjusted by
+    setting 'all_names' to True/False. Also, unless 'overwrite' is True,
+    settings with same names already defined in django configuration are kept
+    without changes.
+    """
+    if all_names is None:
+        all_names = type(settings) == dict
+    
+    if type(settings) != dict:
+        settings = settings.__dict__
+    
+    #TODO: Add debug/logging options? (via logging?)
+    for key, value in settings.items():
+        #Ommit names with underscores and non uppercase ones.
+        #This prevents module imports to be loaded as settings
+        if not all_names and (key.startswith("_") or not key.isupper()): continue
+        #Set settings :-)
+        try:
+            getattr(django.conf.settings, key)
+            if not overwrite:
+#                print("{0} is already defined as {1}".format(key, getattr(django.conf.settings, key)))
+                pass
+            else:
+                setattr(django.conf.settings, key, value)
+#                print("Setting {0} to {1}".format(key, value))
+        except AttributeError:
+            setattr(django.conf.settings, key, value)
+#            print("Setting {0} to {1}".format(key, value))
+#        print("Test: {0} = {1}".format(key,  getattr(django.conf.settings, key)))
+    
