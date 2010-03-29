@@ -5,6 +5,8 @@ Created on 2009-12-09
 @author: Marcin Biernat <biern.m@gmail.com>
 '''
 from django import template
+from django.template.defaultfilters import stringfilter
+from django.utils.safestring import mark_safe
 
 from easy_tag import easy_tag
 
@@ -57,3 +59,29 @@ class IncludeWithNode(template.Node):
         rendered = t.render(context)
         context.pop()
         return rendered
+
+
+@register.filter(name='pygmentize')
+@stringfilter
+def pygmentize(value, language=None):
+    try:
+        from pygments import highlight
+        from pygments.lexers import guess_lexer, get_lexer_by_name
+        from pygments.formatters import HtmlFormatter
+    except ImportError:
+        #TODO: Log no pygments installed
+        return value
+    
+    formatter_options = dict(
+        linenos='inline',
+    )
+    try:
+        lexer = guess_lexer(value) if language is None else \
+            get_lexer_by_name(language)
+        return mark_safe(highlight(value, lexer, 
+            HtmlFormatter(**formatter_options)))
+    except Exception:
+        #TODO: Log error
+        return value
+    
+pygmentize.is_safe = False
