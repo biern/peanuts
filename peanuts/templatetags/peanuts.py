@@ -2,7 +2,7 @@
 '''
 Created on 2009-12-09
 
-@author: Marcin Biernat
+@author: Marcin Biernat <biern.m@gmail.com>
 '''
 from django import template
 
@@ -51,7 +51,9 @@ class IncludeWithNode(template.Node):
             self.kwargs[k] = template.Variable(v).resolve(context)
         
         context.push()
-        context.update(self.kwargs)
+        # Do not use context.update(context) here!
+        for k, v in self.kwargs.items():
+            context[k] = v
         rendered = t.render(context)
         context.pop()
         return rendered
